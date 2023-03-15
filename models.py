@@ -21,7 +21,7 @@ def connect_db(app):
     db.app = app
     db.init_app(app)
 
-class User:
+class User(db.Model):
     """User model."""
 
     __tablename__ = "users"
