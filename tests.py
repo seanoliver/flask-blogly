@@ -66,12 +66,11 @@ class UserViewTestCase(TestCase):
     def test_user_profile(self):
         """Tests user profile page in our application."""
         with self.client as c:
-            user = User.query.one()
-            response = c.get(f'/users/{user.id}')
+            response = c.get(f'/users/{self.user_id}')
             self.assertEqual(response.status_code, 200)
             html = response.get_data(as_text=True)
             self.assertIn('Edit', html)
-
+# Check for something that identifies this unique user.
 
     def test_edit_function(self):
         """Tests edit functionality on a profile in our application."""
@@ -87,6 +86,11 @@ class UserViewTestCase(TestCase):
             self.assertEqual(response.status_code, 302)
             self.assertEqual(user.first_name, 'Bob')
 
+            redirect_page = c.get(response.location)
+            redirect_html = redirect_page.get_data(as_text=True)
+            self.assertIn('Bob', redirect_html)
+
+# Test that redirect is reaching it's destination.
 
     def test_delete_function(self):
         """Tests delete functionality in our application"""
@@ -96,3 +100,8 @@ class UserViewTestCase(TestCase):
             html = response.get_data(as_text=True)
             self.assertEqual(response.status_code, 302)
             self.assertEqual(bool(User.query.all()), False)
+            
+            redirect_page = c.get(response.location)
+            redirect_html = redirect_page.get_data(as_text=True)
+            self.assertNotIn('test1_first', redirect_html)
+

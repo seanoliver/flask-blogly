@@ -11,6 +11,8 @@ app.config['SQLALCHEMY_ECHO'] = True
 
 db = SQLAlchemy()
 
+DEFAULT_IMG = 'https://picsum.photos/100'
+
 def connect_db(app):
     """Connect to database."""
 
@@ -38,6 +40,11 @@ class User(db.Model):
 
     image_url = db.Column(
         db.Text,
+        default = DEFAULT_IMG,
         nullable=True)
+    
+
+
+
     
 

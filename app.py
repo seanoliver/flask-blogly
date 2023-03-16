@@ -3,7 +3,7 @@
 import os
 
 from flask import Flask, redirect, render_template, request, flash
-from models import connect_db, db, User
+from models import connect_db, db, User, DEFAULT_IMG
 from flask_debugtoolbar import DebugToolbarExtension
 
 app = Flask(__name__)
@@ -41,11 +41,11 @@ def display_add_user_form():
 
 @app.post('/users/new')
 def add_new_user():
-    """Adds new user to the database and redirects to the users page"""
+    """Adds new user to the database. (Add requirements) and redirects to the users page"""
 
     first_name = request.form['first_name']
     last_name = request.form['last_name']
-    image_url = request.form.get('image_url', '')
+    image_url = request.form.get('image_url', DEFAULT_IMG)
 
     new_user = User(
         first_name = first_name,
@@ -61,27 +61,23 @@ def add_new_user():
     return redirect('/users')
 
 
-@app.get('/users/<user_id>')
+@app.get('/users/<int:user_id>')
 def user_info_page(user_id):
     """Shows information about the given user."""
 
-    user = User.query.get(int(user_id))
-    image_url = user.image_url or 'https://picsum.photos/100'
+    user = User.query.get_or_404(user_id)
 
     return render_template(
         "user_profile.html",
-        user=user,
-        image_url=image_url
+        user=user
     )
 
-@app.get('/users/<user_id>/edit')
+@app.get('/users/<int:user_id>/edit')
 def edit_user_info(user_id):
     """Shows the edit user form for a user."""
-    user = User.query.get(int(user_id))
-    image_url = user.image_url or ''
+    user = User.query.get_or_404(user_id)
 
-
-    return render_template("edit_user.html", user=user, image_url=image_url)
+    return render_template("edit_user.html", user=user)
 
 
 @app.post('/users/<user_id>/edit')
@@ -101,7 +97,7 @@ def process_edit_form(user_id):
 
 @app.post('/users/<user_id>/delete')
 def delete_user(user_id):
-    """Deletes a user from our list of users"""
+    """Deletes a user from our list of users then redirects user to homepage."""
 
     User.query.filter(User.id == int(user_id)).delete()
     db.session.commit()
