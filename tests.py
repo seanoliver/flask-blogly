@@ -5,7 +5,9 @@ os.environ["DATABASE_URL"] = "postgresql:///blogly_test"
 from unittest import TestCase
 
 from app import app, db
-from models import DEFAULT_IMAGE_URL, User
+from models import User
+from flask import Flask, redirect, render_template, request, flash
+from flask_sqlalchemy import SQLAlchemy
 
 # Make Flask errors be real errors, rather than HTML pages with error info
 app.config['TESTING'] = True
@@ -58,5 +60,35 @@ class UserViewTestCase(TestCase):
             resp = c.get("/users")
             self.assertEqual(resp.status_code, 200)
             html = resp.get_data(as_text=True)
-            self.assertIn("test1_first", html)
-            self.assertIn("test1_last", html)
+            self.assertIn("add_user", html)
+
+    def test_user_profile(self):
+        with self.client as c:
+            user = User.query.one()
+            response = c.get(f'/users/{user.id}')
+            self.assertEqual(response.status_code, 200)
+            html = response.get_data(as_text=True)
+            self.assertIn('Edit', html)
+
+
+    def test_edit_function(self):
+        with self.client as c:
+            user = User.query.one()
+            response = c.post(f'/users/{user.id}/edit',
+                              data={
+                                'first_name': 'Bob',
+                                'last_name': 'Bobenson',
+                                'image_url': 'https://picsum.photos/200'
+                              })
+            html = response.get_data(as_text=True)
+            self.assertEqual(response.status_code, 302)
+            self.assertEqual(user.first_name, 'Bob')
+
+
+    def test_delete_function(self):
+        with self.client as c:
+            user = User.query.one()
+            response = c.post(f'/users/{user.id}/delete')
+            html = response.get_data(as_text=True)
+            self.assertEqual(response.status_code, 302)
+            self.assertEqual(bool(User.query.all()), False)
