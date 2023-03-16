@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div display="flex">
+  <div>
+    <img src="{{ image_url }}" class="small">
+  </div>
+  <div>
+    <div display="flex" flex-direction="column">
+      <div>
+        {{ user.first_name }} {{ user.last_name }}
+      </div>
+      <div>
+        <form action="/users/{{ user.id }}/edit" method="get">
+          <button>
+            Edit
+          </button>
+        </form>
+        <form action="/users/{{ user.id }}/delete" method ="post">
+          <button>
+            Delete
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
