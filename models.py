@@ -42,9 +42,38 @@ class User(db.Model):
         db.Text,
         default = DEFAULT_IMG,
         nullable=True)
-    
 
+    # backref to posts
+    post_id = db.relationship(
+        'Post',
+        backref='users'
+    )
 
+class Post(db.Model):
+    """Post model."""
 
-    
+    __tablename__ = "posts"
+
+    id = db.Column(
+        db.Integer,
+        primary_key=True,
+        autoincrement=True)
+
+    title = db.Column(
+        db.String(50),
+        nullable=False)
+
+    content = db.Column(
+        db.Text,
+        nullable=False)
+
+    created_at = db.Column(
+        db.DateTime(timezone=True),
+        default = db.func.now(),
+        nullable=False)
+
+    user_id = db.Column(
+        db.Integer,
+        db.ForeignKey('users.id')
+    )
 
