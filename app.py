@@ -66,10 +66,11 @@ def user_info_page(user_id):
     """Shows information about the given user."""
 
     user = User.query.get_or_404(user_id)
+    posts = user.posts
 
     return render_template(
         "user_profile.html",
-        user=user
+        user=user, posts=posts
     )
 
 @app.get('/users/<int:user_id>/edit')
@@ -146,10 +147,33 @@ def show_post(post_id):
 def edit_post_form(post_id):
     """Show form to edit a post, and to cancel (back to user page)."""
 
+    post = Post.query.get_or_404(post_id)
+    user = User.query.get_or_404(post.user_id)
+
+    return render_template('edit_post.html', post=post, user=user)
+
+
 @app.post('/posts/<int:post_id>/edit')
 def edit_post(post_id):
     """Handle editing of a post. Redirect back to the post view."""
 
+    post = Post.query.get_or_404(post_id)
+    post.title = request.form.get('title')
+    post.content = request.form.get('content')
+
+    db.session.commit()
+
+    flash(f'Edited Post: {post.title}!')
+
+    return redirect(f'/posts/{post.id}')
+    
+
 @app.post('/posts/<int:post_id>/delete')
 def delete_post(post_id):
     """Delete the post."""
+
+    Post.query.filter(Post.id == post_id).delete()
+    db.session.commit()
+    
+    flash(f"Your post has been deleted!")
+    return redirect('/')

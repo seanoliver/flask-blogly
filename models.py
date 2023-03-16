@@ -44,7 +44,7 @@ class User(db.Model):
         nullable=True)
 
     # backref to posts
-    post_id = db.relationship(
+    posts = db.relationship(
         'Post',
         backref='users'
     )

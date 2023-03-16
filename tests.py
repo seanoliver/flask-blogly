@@ -5,7 +5,7 @@ os.environ["DATABASE_URL"] = "postgresql:///blogly_test"
 from unittest import TestCase
 
 from app import app, db
-from models import User
+from models import User, Post
 from flask import Flask, redirect, render_template, request, flash
 from flask_sqlalchemy import SQLAlchemy
 
@@ -33,6 +33,7 @@ class UserViewTestCase(TestCase):
         # all of their records before each test just as we're doing with the
         # User model below.
         User.query.delete()
+        Post.query.delete()
 
         self.client = app.test_client()
 
@@ -45,11 +46,22 @@ class UserViewTestCase(TestCase):
         db.session.add(test_user)
         db.session.commit()
 
+        test_post = Post(
+            title='test_title',
+            content='test_content',
+            user_id=test_user.id
+        )
+
+        db.session.add(test_post)
+        db.session.commit()
+        
+
         # We can hold onto our test_user's id by attaching it to self (which is
         # accessible throughout this test class). This way, we'll be able to
         # rely on this user in our tests without needing to know the numeric
         # value of their id, since it will change each time our tests are run.
         self.user_id = test_user.id
+        self.post_id = test_post.id
 
     def tearDown(self):
         """Clean up any fouled transaction."""
@@ -70,7 +82,6 @@ class UserViewTestCase(TestCase):
             self.assertEqual(response.status_code, 200)
             html = response.get_data(as_text=True)
             self.assertIn('Edit', html)
-# Check for something that identifies this unique user.
 
     def test_edit_function(self):
         """Tests edit functionality on a profile in our application."""
@@ -90,7 +101,6 @@ class UserViewTestCase(TestCase):
             redirect_html = redirect_page.get_data(as_text=True)
             self.assertIn('Bob', redirect_html)
 
-# Test that redirect is reaching it's destination.
 
     def test_delete_function(self):
         """Tests delete functionality in our application"""
@@ -100,8 +110,27 @@ class UserViewTestCase(TestCase):
             html = response.get_data(as_text=True)
             self.assertEqual(response.status_code, 302)
             self.assertEqual(bool(User.query.all()), False)
-            
+
             redirect_page = c.get(response.location)
             redirect_html = redirect_page.get_data(as_text=True)
             self.assertNotIn('test1_first', redirect_html)
 
+    def test_edit_post(self):
+        """Tests whether a user can edit a post in our application."""
+        with self.client as c:
+            user = User.query.one()
+            post = Post.query.first()
+            response = c.post(f'/posts/{post.id}/edit', 
+                              data={
+                                'title': 'Here is a title',
+                                'content': 'Have you ever been to the moon?'
+                              })
+            html = response.get_data(as_text=True)
+            self.assertEqual(response.status_code, 302)
+            self.assertEqual(post.title, 'Here is a title')
+
+            redirect_page = c.get(response.location)
+            print(response.location, 'Location of response')
+            redirect_html = redirect_page.get_data(as_text=True)
+            print(redirect_html, 'The redirected html!')
+            self.assertIn('Have you ever been to the moon?', redirect_html)

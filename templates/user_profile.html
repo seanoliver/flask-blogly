@@ -14,6 +14,17 @@
         <form action="/users/{{ user.id }}/delete" method="post">
           <button>Delete</button>
         </form>
+        {% if user.posts %}
+        <header>Posts</header>
+        <ul id="posts">
+         {% for post in posts %}
+          <li><a href='/posts/{{post.id}}'>{{ post.title }}</li>
+         {% endfor %}
+        </ul>
+        {% endif %}
+        <form action="/users/{{ user.id }}/posts/new" method="GET">
+          <button>Add Post</button>
+        </form>
       </div>
     </div>
   </div>
