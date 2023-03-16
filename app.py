@@ -11,6 +11,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get(
     "DATABASE_URL", 'postgresql:///flask_blogly')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_ECHO'] = True
+app.config['DEBUG_TB_INTERCEPT_REDIRECTS'] = False
 
 connect_db(app)
 
@@ -28,27 +29,6 @@ def list_users():
 def show_users():
     """Show list of all current users"""
 
-    # db.drop_all()
-    # db.create_all()
-
-    # # If table isn't empty, empty it
-    # # An alternative if you don't want to drop
-    # # and recreate your tables:
-    # # Pet.query.delete()
-
-    # # Add pets
-    # matt = User(first_name='Matt', last_name='Gregerson')
-    # sean = User(first_name='Sean', last_name='Oliver')
-    # theRock = User(first_name='The', last_name='Rock', image_url='https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8Mnx8dXNlciUyMHByb2ZpbGV8ZW58MHx8MHx8&w=1000&q=80')
-
-    # # Add new objects to session, so they'll persist
-    # db.session.add(matt)
-    # db.session.add(sean)
-    # db.session.add(theRock)
-
-    # # Commit--otherwise, this never gets saved!
-    # db.session.commit()
-
     users = User.query.all()
     return render_template('users.html', users=users)
 
@@ -61,10 +41,11 @@ def display_add_user_form():
 
 @app.post('/users/new')
 def add_new_user():
+    """Adds new user to the database and redirects to the users page"""
 
     first_name = request.form['first_name']
     last_name = request.form['last_name']
-    image_url = request.form.get('image_url')
+    image_url = request.form.get('image_url', '')
 
     new_user = User(
         first_name = first_name,
@@ -127,7 +108,3 @@ def delete_user(user_id):
 
     flash(f"User has been deleted!")
     return redirect('/')
-
-
-# POST /users/[user-id]/delete
-# Delete the user.

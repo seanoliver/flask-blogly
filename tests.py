@@ -56,6 +56,7 @@ class UserViewTestCase(TestCase):
         db.session.rollback()
 
     def test_list_users(self):
+        """Tests whether our list of users is displayed correct at /users in our application"""
         with self.client as c:
             resp = c.get("/users")
             self.assertEqual(resp.status_code, 200)
@@ -63,6 +64,7 @@ class UserViewTestCase(TestCase):
             self.assertIn("add_user", html)
 
     def test_user_profile(self):
+        """Tests user profile page in our application."""
         with self.client as c:
             user = User.query.one()
             response = c.get(f'/users/{user.id}')
@@ -72,6 +74,7 @@ class UserViewTestCase(TestCase):
 
 
     def test_edit_function(self):
+        """Tests edit functionality on a profile in our application."""
         with self.client as c:
             user = User.query.one()
             response = c.post(f'/users/{user.id}/edit',
@@ -86,6 +89,7 @@ class UserViewTestCase(TestCase):
 
 
     def test_delete_function(self):
+        """Tests delete functionality in our application"""
         with self.client as c:
             user = User.query.one()
             response = c.post(f'/users/{user.id}/delete')
