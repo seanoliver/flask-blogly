@@ -2,6 +2,7 @@ from flask import Flask, request, redirect, render_template
 from flask_debugtoolbar import DebugToolbarExtension
 from flask_sqlalchemy import SQLAlchemy
 import os
+import datetime
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get(
@@ -12,6 +13,8 @@ app.config['SQLALCHEMY_ECHO'] = True
 db = SQLAlchemy()
 
 DEFAULT_IMG = 'https://picsum.photos/100'
+
+
 
 def connect_db(app):
     """Connect to database."""
@@ -77,4 +80,10 @@ class Post(db.Model):
         db.Integer,
         db.ForeignKey('users.id') # FIXME: add not nullable
     )
+
+    @property
+    def friendly_date(self):
+        """Return nicely-formatted date."""
+
+        return self.created_at.strftime("%a %b %-d  %Y, %-I:%M %p")
 

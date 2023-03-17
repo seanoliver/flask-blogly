@@ -1,0 +1,11 @@
+{% extends 'base.html' %} {% block content %}
+<header>Blogly Recent Posts</header>
+
+{% for post in new_posts %}
+<h2><b>{{ post.title }}</b></h2>
+<p>{{ post.content }}</p>
+<p>
+  By {{ post.users.first_name }} {{ post.users.last_name }} on {{
+  post.friendly_date }}
+</p>
+{% endfor %} {% endblock %}

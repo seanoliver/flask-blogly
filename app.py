@@ -20,10 +20,16 @@ debug = DebugToolbarExtension(app)
 
 
 @app.get('/')
-def list_users():
-    """Redirect to list of users"""
+def show_homepage():
+    """Shows the 5 most recent posts on the website."""
+    
+    posts = Post.query.all()
 
-    return redirect('/users')
+    users = User.query.all()
+    
+    new_posts = [posts[0], posts[1], posts[2], posts[3], posts[4]]
+
+    return render_template('homepage.html', new_posts = new_posts, users = users)
 
 @app.get('/users')
 def show_users():
