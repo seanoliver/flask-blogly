@@ -22,14 +22,10 @@ debug = DebugToolbarExtension(app)
 @app.get('/')
 def show_homepage():
     """Shows the 5 most recent posts on the website."""
-    
-    posts = Post.query.all()
 
-    users = User.query.all()
-    
-    new_posts = [posts[0], posts[1], posts[2], posts[3], posts[4]]
+    posts = Post.query.order_by(Post.created_at.desc()).limit(5).all()
 
-    return render_template('homepage.html', new_posts = new_posts, users = users)
+    return render_template('homepage.html', posts = posts)
 
 @app.get('/users')
 def show_users():
