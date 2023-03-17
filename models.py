@@ -43,10 +43,9 @@ class User(db.Model):
         default = DEFAULT_IMG,
         nullable=True)
 
-    # backref to posts
     posts = db.relationship(
         'Post',
-        backref='users'
+        backref='users'         # FIXME: Change to 'user'
     )
 
 class Post(db.Model):
@@ -72,8 +71,10 @@ class Post(db.Model):
         default = db.func.now(),
         nullable=False)
 
+    # TODO: user backref
+
     user_id = db.Column(
         db.Integer,
-        db.ForeignKey('users.id')
+        db.ForeignKey('users.id') # FIXME: add not nullable
     )
 

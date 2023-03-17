@@ -96,15 +96,22 @@ def process_edit_form(user_id):
 
     return redirect(f"/users/{ user.id }")
 
-@app.post('/users/<user_id>/delete')
+@app.post('/users/<int:user_id>/delete')
 def delete_user(user_id):
     """Deletes a user from our list of users then redirects user to homepage."""
 
-    User.query.filter(User.id == int(user_id)).delete()
+    # FIXME: First, confirm the user actually exists (get_or_404)
+
+    Post.query.filter(Post.user_id == user_id).delete()
+    User.query.filter(User.id == user_id).delete()
     db.session.commit()
 
     flash(f"User has been deleted!")
-    return redirect('/')
+    return redirect('/') # FIXME: redirect directly to /users (need to change tests too)
+
+# ============================================================================ #
+# Post Routes                                                                  #
+# ============================================================================ #
 
 @app.get('/users/<int:user_id>/posts/new')
 def new_post_form(user_id):
@@ -141,7 +148,7 @@ def show_post(post_id):
     post = Post.query.get_or_404(post_id)
     user = User.query.get_or_404(post.user_id)
 
-    return render_template("post.html", post=post, user=user)
+    return render_template("post.html", post=post, user=user) # FIXME: Can use 'post.user' instead
 
 @app.get('/posts/<int:post_id>/edit')
 def edit_post_form(post_id):
@@ -150,7 +157,7 @@ def edit_post_form(post_id):
     post = Post.query.get_or_404(post_id)
     user = User.query.get_or_404(post.user_id)
 
-    return render_template('edit_post.html', post=post, user=user)
+    return render_template('edit_post.html', post=post, user=user) # FIXME: Same as above
 
 
 @app.post('/posts/<int:post_id>/edit')
@@ -166,14 +173,14 @@ def edit_post(post_id):
     flash(f'Edited Post: {post.title}!')
 
     return redirect(f'/posts/{post.id}')
-    
+
 
 @app.post('/posts/<int:post_id>/delete')
 def delete_post(post_id):
     """Delete the post."""
-
+    # FIXME: First confirm the post exists and then delete
     Post.query.filter(Post.id == post_id).delete()
     db.session.commit()
-    
+
     flash(f"Your post has been deleted!")
-    return redirect('/')
+    return redirect('/') # FIXME: redirect to /users/user_id instead

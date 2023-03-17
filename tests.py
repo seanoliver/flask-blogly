@@ -23,7 +23,7 @@ db.drop_all()
 db.create_all()
 
 
-class UserViewTestCase(TestCase):
+class UserViewTestCase(TestCase): # FIXME: Organize the post tests into their own class namespace
     """Test views for users."""
 
     def setUp(self):
@@ -32,8 +32,9 @@ class UserViewTestCase(TestCase):
         # As you add more models later in the exercise, you'll want to delete
         # all of their records before each test just as we're doing with the
         # User model below.
-        User.query.delete()
         Post.query.delete()
+        User.query.delete()
+
 
         self.client = app.test_client()
 
@@ -54,7 +55,6 @@ class UserViewTestCase(TestCase):
 
         db.session.add(test_post)
         db.session.commit()
-        
 
         # We can hold onto our test_user's id by attaching it to self (which is
         # accessible throughout this test class). This way, we'll be able to
@@ -107,7 +107,7 @@ class UserViewTestCase(TestCase):
         with self.client as c:
             user = User.query.one()
             response = c.post(f'/users/{user.id}/delete')
-            html = response.get_data(as_text=True)
+
             self.assertEqual(response.status_code, 302)
             self.assertEqual(bool(User.query.all()), False)
 
@@ -118,19 +118,61 @@ class UserViewTestCase(TestCase):
     def test_edit_post(self):
         """Tests whether a user can edit a post in our application."""
         with self.client as c:
-            user = User.query.one()
-            post = Post.query.first()
-            response = c.post(f'/posts/{post.id}/edit', 
+
+            post = Post.query.first() # FIXME: We already have self.post_id in class so we don't need this
+            response = c.post(f'/posts/{post.id}/edit',
                               data={
                                 'title': 'Here is a title',
                                 'content': 'Have you ever been to the moon?'
-                              })
-            html = response.get_data(as_text=True)
+                              }) # FIXME: follow_redirects = True and then we don't need the additional response.location lines below
+
             self.assertEqual(response.status_code, 302)
             self.assertEqual(post.title, 'Here is a title')
 
             redirect_page = c.get(response.location)
             print(response.location, 'Location of response')
+
             redirect_html = redirect_page.get_data(as_text=True)
             print(redirect_html, 'The redirected html!')
             self.assertIn('Have you ever been to the moon?', redirect_html)
+
+    def test_add_new_post(self):
+        """Test the post route for adding a new post"""
+
+        with self.client as c:
+            response = c.post(f'/users/{self.user_id}/posts/new',
+                              data={
+                                'title' : 'This is a new post!',
+                                'content' : 'And it is so good to read a new post.',
+                                'user_id' : self.user_id
+                              }) # FIXME: Same comment re redirects
+
+            self.assertEqual(response.status_code, 302)
+            redirect_page = c.get(response.location)
+            redirect_html = redirect_page.get_data(as_text=True)
+            self.assertIn('This is a new post!', redirect_html)
+
+    def test_delete_post(self):
+        """Test deleting a post."""
+
+        with self.client as c:
+            response = c.post(f'/posts/{self.post_id}/delete') # FIXME: Same comment re: redirects
+
+            self.assertEqual(response.status_code, 302)
+            self.assertEqual(bool(Post.query.all()), False)
+
+
+            # two redirects through / to /users
+            redirect_page1 = c.get(response.location)
+            redirect_page2 = c.get(redirect_page1.location)
+            redirect_html = redirect_page2.get_data(as_text=True)
+            self.assertIn('Your post has been deleted!', redirect_html) # FIXME: Add post title to flash message
+
+    def test_show_post(self):
+        """Test showing an individual post page."""
+
+        with self.client as c:
+            response = c.get(f'/posts/{self.post_id}')
+            self.assertEqual(response.status_code, 200)
+            html = response.get_data(as_text=True)
+            self.assertIn('test_title', html)
